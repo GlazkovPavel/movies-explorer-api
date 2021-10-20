@@ -1,0 +1,26 @@
+{
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "name": "movies-explorer-api",
+  "description": "",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GlazkovPavel/movies-explorer-api.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GlazkovPavel/movies-explorer-api/issues"
+  },
+  "homepage": "https://github.com/GlazkovPavel/movies-explorer-api#readme",
+  "devDependencies": {
+    "nodemon": "^2.0.14"
+  }
+}
