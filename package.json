@@ -1,13 +1,16 @@
 {
   "dependencies": {
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "mongoose": "^6.0.11"
   },
   "name": "movies-explorer-api",
   "description": "",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js"
+    "dev": "nodemon app.js",
+    "lint": "npx eslint",
+    "start": "node app.js"
   },
   "repository": {
     "type": "git",
