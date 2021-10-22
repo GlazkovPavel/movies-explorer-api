@@ -7,7 +7,7 @@ users.get('/me', getUser);
 
 users.patch('/me', celebrate({
   body: Joi.object().keys({
-    email: Joi.string().required().min(4),
+    email: Joi.string().required().email(),
     password: Joi.string().required().min(8)
   })
 }) ,updateUser);
