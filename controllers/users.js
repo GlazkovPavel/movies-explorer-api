@@ -1,9 +1,12 @@
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { NODE_ENV, JWT_SECRET } = process.env;
 
 const User = require('../models/user')
 const NotFoundError = require("../errors/not-found-err");
 const BadRequestErr = require("../errors/bad-request-err");
 const ConflictErr = require("../errors/conflict-err");
+const UnauthorizedErr = require("../errors/unauthorized-err");
 
 const saltRounds = 10;
 
@@ -72,6 +75,31 @@ module.exports.createUser = (req, res, next) => {
         }
         return next(err);
       }))
+    .catch(next);
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  User.findOne({ email }).select('+password')
+    .then((user) => {
+      if (!user) {
+        throw new UnauthorizedErr('Неправильные почта или пароль');
+      }
+      return bcrypt.compare(password, user.password)
+        .then((matched) => {
+          if (!matched) {
+            throw new UnauthorizedErr('Неправильные почта или пароль');
+          }
+          return user;
+        });
+    })
+    .then((verifiedUser) => {
+      const token = jwt.sign({ _id: verifiedUser._id },
+        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        { expiresIn: '7d' });
+      return res.send({ token });
+    })
     .catch(next);
 };
 
