@@ -3,8 +3,8 @@ const { celebrate, Joi } = require('celebrate');
 const { getMovies, createMovie, deleteMovieById } = require('../controllers/movies');
 const { methodValidator } = require('../middlewares/methodValidator');
 
-movies.get('/', getMovies);
-movies.post('/', celebrate({
+movies.get('/movies', getMovies);
+movies.post('/movies', celebrate({
   body: Joi.object().keys({
     country: Joi.string().required(),
     director: Joi.string().required(),

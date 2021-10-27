@@ -8,6 +8,13 @@ const NotFoundError = require('../errors/not-found-err');
 const BadRequestErr = require('../errors/bad-request-err');
 const ConflictErr = require('../errors/conflict-err');
 const UnauthorizedErr = require('../errors/unauthorized-err');
+const {
+  invalidDataErrorText,
+  invalidUserIdErrorText,
+  userIdNotFoundText,
+  duplicateEmailErrorText,
+  wrongCredentialsErrorText,
+} = require('../errors/error-text');
 
 const saltRounds = 10;
 
@@ -15,13 +22,13 @@ module.exports.getUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Запрашиваемый пользователь не найден');
+        throw new NotFoundError(invalidUserIdErrorText);
       }
       res.send(user);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
-        throw new BadRequestErr('Произошла ошибка валидации');
+        throw new BadRequestErr(invalidDataErrorText);
       }
     })
     .catch(next);
@@ -29,18 +36,18 @@ module.exports.getUser = (req, res, next) => {
 
 module.exports.updateUser = (req, res, next) => {
   const {
-    email
+    email,
   } = req.body;
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        throw new ConflictErr('Пользователь с таким email уже существует');
+        throw new ConflictErr(duplicateEmailErrorText);
       }
       User.findByIdAndUpdate(req.user._id, { email: req.body.email, name: req.body.name },
         { new: true, runValidators: true })
-        .then((user) => {
-          if (!user) {
-            throw new NotFoundError('Запрашиваемый пользователь не найден');
+        .then((userMe) => {
+          if (!userMe) {
+            throw new NotFoundError(userIdNotFoundText);
           }
           return res.send(
             {
@@ -54,13 +61,11 @@ module.exports.updateUser = (req, res, next) => {
         })
         .catch((err) => {
           if (err.name === 'ValidationError' || err.name === 'CastError') {
-            throw new BadRequestErr('Произошла ошибка валидации');
+            throw new BadRequestErr(invalidDataErrorText);
           }
-        })
-
+        });
     })
     .catch(next);
-
 };
 
 module.exports.createUser = (req, res, next) => {
@@ -71,7 +76,7 @@ module.exports.createUser = (req, res, next) => {
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        throw new ConflictErr('Пользователь с таким email уже существует');
+        throw new ConflictErr(duplicateEmailErrorText);
       }
       return bcrypt.hash(password, saltRounds);
     })
@@ -87,7 +92,7 @@ module.exports.createUser = (req, res, next) => {
       }))
       .catch((err) => {
         if (err.name === 'ValidationError') {
-          throw new BadRequestErr('Введены невалидные данные');
+          throw new BadRequestErr(invalidDataErrorText);
         }
         return next(err);
       }))
@@ -100,12 +105,12 @@ module.exports.login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new UnauthorizedErr('Неправильные почта или пароль');
+        throw new UnauthorizedErr(wrongCredentialsErrorText);
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new UnauthorizedErr('Неправильные почта или пароль');
+            throw new UnauthorizedErr(wrongCredentialsErrorText);
           }
           return user;
         });

@@ -2,6 +2,7 @@ const Movie = require('../models/movie');
 const BadRequestErr = require('../errors/bad-request-err');
 const ForbiddenErr = require('../errors/forbidden-err');
 const NotFoundError = require('../errors/not-found-err');
+const { invalidDataErrorText, movieIdNotFoundErrorText, forbiddenErrorText } = require('../errors/error-text');
 
 module.exports.getMovies = (req, res, next) => {
   const owner = req.user._id;
@@ -48,7 +49,7 @@ module.exports.createMovie = (req, res, next) => {
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        throw new BadRequestErr('Введены невалидные данные');
+        throw new BadRequestErr(invalidDataErrorText);
       }
       return next(err);
     })
@@ -59,9 +60,9 @@ module.exports.deleteMovieById = (req, res, next) => {
   Movie.findById(req.params.movieId).select('+owner')
     .then((movie) => {
       if (!movie) {
-        throw new NotFoundError('Запрашиваемый фильм не найден');
+        throw new NotFoundError(movieIdNotFoundErrorText);
       } else if (movie.owner.toString() !== req.user._id) {
-        throw new ForbiddenErr('У Вас нет прав');
+        throw new ForbiddenErr(forbiddenErrorText);
       }
 
       Movie.findByIdAndDelete(req.params.movieId).select('-owner')

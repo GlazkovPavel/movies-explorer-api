@@ -1,11 +1,11 @@
 require('dotenv').config();
+
 const { ADDRESS_BD } = process.env;
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
-const rateLimit = require('express-rate-limit');
 const { movies } = require('./routes/movies');
 const { users } = require('./routes/users');
 const errorHanding = require('./middlewares/error');
@@ -13,6 +13,7 @@ const { authorization } = require('./routes/authorization');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const wrong = require('./routes/wrong-requests');
+const limiter = require('./middlewares/limiter');
 
 const { PORT = 3000, BASE_PATH } = process.env;
 
@@ -25,19 +26,16 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(helmet());
 
-app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-}));
-
 app.use(requestLogger);
+
+app.use(limiter);
 
 app.use('/', authorization);
 
 app.use(auth);
 
-app.use('/movies', movies);
-app.use('/users', users);
+app.use('/', movies);
+app.use('/', users);
 app.use('*', wrong);
 
 app.use(errorLogger);
