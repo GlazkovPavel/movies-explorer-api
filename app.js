@@ -1,24 +1,24 @@
 require('dotenv').config();
+const { ADDRESS_BD } = process.env;
 const express = require('express');
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
 const rateLimit = require('express-rate-limit');
-const { movies } = require("./routes/movies");
-const {users} = require("./routes/users");
+const { movies } = require('./routes/movies');
+const { users } = require('./routes/users');
 const errorHanding = require('./middlewares/error');
-const {authorization} = require("./routes/authorization");
+const { authorization } = require('./routes/authorization');
 const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const wrong = require('./routes/wrong-requests');
 
-
-const { PORT = 3001, BASE_PATH } = process.env;
+const { PORT = 3000, BASE_PATH } = process.env;
 
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/bitfilmsdb');
+mongoose.connect(`${ADDRESS_BD}`);
 
 app.use(bodyParser.json()); // для собирания JSON-формата
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,7 +34,7 @@ app.use(requestLogger);
 
 app.use('/', authorization);
 
-app.use(auth)
+app.use(auth);
 
 app.use('/movies', movies);
 app.use('/users', users);
