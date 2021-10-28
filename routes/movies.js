@@ -1,7 +1,7 @@
 const movies = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 const { getMovies, createMovie, deleteMovieById } = require('../controllers/movies');
-const { methodValidator } = require('../middlewares/methodValidator');
+const { methodValidator } = require('../validation/methodValidator');
 
 movies.get('/movies', getMovies);
 movies.post('/movies', celebrate({
