@@ -1,25 +1,22 @@
 require('dotenv').config();
 
-const { ADDRESS_BD } = process.env;
+const { ADDRESS_BD, NODE_ENV } = process.env;
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
 const { errors } = require('celebrate');
-const { movies } = require('./routes/movies');
-const { users } = require('./routes/users');
 const errorHanding = require('./middlewares/error');
-const { authorization } = require('./routes/authorization');
-const auth = require('./middlewares/auth');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const wrong = require('./routes/wrong-requests');
 const limiter = require('./middlewares/limiter');
+const { routes } = require('./routes/rout');
+const mongoUrl = require('./middlewares/mongoUrl');
 
 const { PORT = 3000, BASE_PATH } = process.env;
 
 const app = express();
 
-mongoose.connect(`${ADDRESS_BD}`);
+mongoose.connect(NODE_ENV === 'production' ? ADDRESS_BD : mongoUrl);
 
 app.use(bodyParser.json()); // для собирания JSON-формата
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -30,13 +27,7 @@ app.use(requestLogger);
 
 app.use(limiter);
 
-app.use('/', authorization);
-
-app.use(auth);
-
-app.use('/', movies);
-app.use('/', users);
-app.use('*', wrong);
+app.use(routes);
 
 app.use(errorLogger);
 

@@ -22,7 +22,7 @@ module.exports.getUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        throw new NotFoundError(invalidUserIdErrorText);
+        throw new NotFoundError(userIdNotFoundText);
       }
       res.send(user);
     })
@@ -30,40 +30,41 @@ module.exports.getUser = (req, res, next) => {
       if (err.name === 'CastError') {
         throw new BadRequestErr(invalidDataErrorText);
       }
+      return next(err);
     })
     .catch(next);
 };
 
 module.exports.updateUser = (req, res, next) => {
-  const {
-    email,
-  } = req.body;
-  User.findOne({ email })
+  const { email, name } = req.body;
+
+  User.findByIdAndUpdate(req.user._id, { email, name }, {
+    new: true,
+    runValidators: true,
+    upsert: false,
+  })
     .then((user) => {
-      if (user) {
+      if (!user) {
+        throw new NotFoundError(userIdNotFoundText);
+      } else {
+        return res.send({
+          user:
+            {
+              name: user.name,
+              email: user.email,
+            },
+        });
+      }
+    })
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        throw new BadRequestErr(invalidDataErrorText);
+      } else if (err.name === 'CastError') {
+        throw new BadRequestErr(invalidUserIdErrorText);
+      } else if (err.codeName === 'DuplicateKey') {
         throw new ConflictErr(duplicateEmailErrorText);
       }
-      User.findByIdAndUpdate(req.user._id, { email: req.body.email, name: req.body.name },
-        { new: true, runValidators: true })
-        .then((userMe) => {
-          if (!userMe) {
-            throw new NotFoundError(userIdNotFoundText);
-          }
-          return res.send(
-            {
-              user:
-                {
-                  name: user.name,
-                  email: user.email,
-                },
-            },
-          );
-        })
-        .catch((err) => {
-          if (err.name === 'ValidationError' || err.name === 'CastError') {
-            throw new BadRequestErr(invalidDataErrorText);
-          }
-        });
+      return next(err);
     })
     .catch(next);
 };
