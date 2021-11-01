@@ -19,7 +19,7 @@ movies.post('/movies', celebrate({
     nameEN: Joi.string().required(),
   }),
 }), createMovie);
-movies.delete('/:movieId', celebrate({
+movies.delete('/movies/:movieId', celebrate({
   params: Joi.object().keys({
     movieId: Joi.string().required().length(24).hex(),
   }),
