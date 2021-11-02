@@ -1,0 +1,10 @@
+{
+  "extends": "airbnb-base",
+  "root": true,
+  "rules": {
+    "no-underscore-dangle": [1, { "allow": ["_id"] }],
+    "no-console": ["error", { "allow": ["log"] }],
+    "consistent-return": "off",
+    "func-names": 0
+  }
+}
